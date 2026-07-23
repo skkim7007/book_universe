@@ -8,551 +8,434 @@
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
 
-      .font-cute {
+      body {
         font-family: 'Jua', sans-serif;
+        background-color: #020617; /* slate-950 */
       }
 
-      /* 떠다니는 애니메이션 */
+      /* 행성 둥둥 떠다니는 애니메이션 */
       @keyframes float {
         0% { transform: translate(-50%, -50%) translateY(0); }
-        50% { transform: translate(-50%, -50%) translateY(-12px); }
+        50% { transform: translate(-50%, -50%) translateY(-8px); }
         100% { transform: translate(-50%, -50%) translateY(0); }
       }
-      .planet-float {
-        animation: float 4s ease-in-out infinite;
+
+      .planet-wrapper {
         position: absolute;
         transform: translate(-50%, -50%);
+        transition: left 0.5s ease, top 0.5s ease;
+      }
+
+      .planet-float {
+        animation: float 4s ease-in-out infinite;
       }
 
       /* 별똥별 애니메이션 */
       @keyframes shootingStar {
         0% { transform: translateX(0) translateY(0) rotate(-45deg) scale(1); opacity: 1; }
-        100% { transform: translateX(-800px) translateY(800px) rotate(-45deg) scale(0); opacity: 0; }
+        100% { transform: translateX(-600px) translateY(600px) rotate(-45deg) scale(0); opacity: 0; }
       }
+
       .shooting-star {
         position: absolute;
-        width: 120px;
-        height: 3px;
+        width: 100px;
+        height: 2px;
         background: linear-gradient(to right, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
         border-radius: 999px;
-        filter: drop-shadow(0 0 8px rgba(255, 255, 255, 1));
+        filter: drop-shadow(0 0 5px rgba(255, 255, 255, 1));
       }
 
-      /* 행성 스테이지 (그림자 및 발광 효과) */
-      .planet-stage {
-        position: relative;
-        display: inline-grid;
-        place-items: center;
-        width: var(--planet-size);
-        height: var(--planet-size);
-        filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 20px var(--planet-glow));
-        transition: filter 300ms ease, transform 300ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      }
-
-      .planet-selected {
-        filter: drop-shadow(0 20px 35px rgba(0, 0, 0, 0.7)) drop-shadow(0 0 40px var(--planet-glow));
-        transform: scale(1.15);
-        z-index: 30 !important;
-      }
-
-      /* ★ 영롱한 3D 크리스탈 행성 본체 ★ */
-      .planet-body {
-        position: relative;
-        z-index: 2;
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        background: var(--planet-bg);
-        background-size: var(--planet-bg-size, auto);
-        /* 강력하고 부드러운 입체 유리구슬 효과 */
-        box-shadow: 
-          inset -15px -15px 30px rgba(0, 0, 0, 0.7), /* 어두운 뒷면 */
-          inset 10px 10px 20px rgba(255, 255, 255, 0.6), /* 밝은 하이라이트 */
-          inset 0 0 15px rgba(255, 255, 255, 0.3); /* 은은한 테두리 빛 */
-        overflow: hidden;
-      }
-
-      /* 행성 띠 (줄무늬가 있는 경우) */
-      .planet-stripes {
-        position: absolute;
-        inset: 0;
-        border-radius: 50%;
-        background: repeating-linear-gradient(
-          calc(0deg + var(--planet-tilt, 0deg)),
-          rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.1) 10%,
-          rgba(255,255,255,0.1) 10%, rgba(255,255,255,0.1) 20%
-        );
-        mix-blend-mode: overlay;
-        opacity: var(--planet-stripes-opacity, 0);
-      }
-
-      /* 영롱한 고리 */
-      .planet-ring {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        width: 160%;
-        height: 45%;
-        border: var(--planet-ring-width) solid var(--planet-ring-color);
-        border-left-color: transparent;
-        border-right-color: transparent;
-        border-radius: 999px;
-        pointer-events: none;
-        transform: translate(-50%, -50%) rotate(calc(var(--planet-tilt) - 15deg));
-        box-shadow: 
-          0 0 15px var(--planet-ring-color),
-          inset 0 0 10px var(--planet-ring-color);
-      }
-      .planet-ring-back { z-index: 1; opacity: 0.4; }
-      .planet-ring-front { z-index: 3; clip-path: inset(50% 0 0 0); opacity: 0.9; }
-
-      /* 생성 팝 애니메이션 */
+      /* 행성 생성 팝 애니메이션 */
       @keyframes popIn {
         0% { transform: scale(0); opacity: 0; }
         70% { transform: scale(1.15); opacity: 1; }
         100% { transform: scale(1); opacity: 1; }
       }
+
       .animate-pop-in {
         animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
       }
 
+      /* 진행도 줄무늬 애니메이션 */
+      @keyframes stripe { 0% { background-position: 0 0; } 100% { background-position: 40px 40px; } }
       .progress-stripe {
-        background-image: linear-gradient(
-          45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%,
-          rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent
-        );
+        background-image: linear-gradient(45deg, rgba(255,255,255,0.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.15) 75%, transparent 75%, transparent);
         background-size: 40px 40px;
         animation: stripe 1s linear infinite;
       }
-      @keyframes stripe { 0% { background-position: 0 0; } 100% { background-position: 40px 40px; } }
+
+      /* 커스텀 스크롤바 */
+      .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); border-radius: 4px; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(99, 102, 241, 0.5); border-radius: 4px; }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(99, 102, 241, 0.8); }
     </style>
   </head>
-  <body class="bg-slate-950">
+  <body>
     <div id="root"></div>
 
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
+    <!-- Firebase SDK 로드 -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+      import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+      import { getFirestore, collection, onSnapshot, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+      // React 코드(Babel)에서 Firebase 모듈을 사용할 수 있도록 전역 객체에 연결
+      window.FirebaseEnv = { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore, collection, onSnapshot, addDoc, serverTimestamp };
+    </script>
+
     <script type="text/babel">
-      const { useEffect, useMemo, useRef, useState } = React;
+      const { useEffect, useMemo, useRef, useState, useCallback } = React;
 
-      // =========================================================================
-      // 🚨 구글 앱스 스크립트 웹 앱 URL을 아래에 붙여넣으세요! (따옴표 안에)
-      // =========================================================================
-      const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyKfQuMBDXAiF0hwuXuYJ88YtbSH3LvVXh9eOMGmitiIcuiNzouJf7TeuNAe1ttFYfo/exec'; 
-      
-      const STORAGE_KEY = 'reading-universe-books';
-      const CANVAS_MODEL = { width: 760, height: 500 };
-
-      // ★ 심미적이고 감성적인 추상 텍스처로 새롭게 정의된 행성들 ★
-      const PLANET_THEMES = [
-        { id: 'mercury', name: '수성', desc: '태양과 가장 가까운 은빛 행성. 낮과 밤의 온도 차이가 극심하죠.', bg: 'radial-gradient(circle at 30% 30%, #d1d5db, #6b7280 60%, #374151)', glow: 'rgba(156, 163, 175, 0.4)', hasRing: false },
-        { id: 'venus', name: '금성', desc: '두꺼운 황금빛 대기로 덮인, 밤하늘에서 가장 밝게 빛나는 아름다운 행성입니다.', bg: 'radial-gradient(circle at 40% 40%, #fde047, #f59e0b 50%, #92400e)', glow: 'rgba(251, 191, 36, 0.5)', hasRing: false },
-        { id: 'earth', name: '지구', desc: '푸른빛의 생명력이 넘치는 우리의 고향. 맑은 바다와 부드러운 구름이 소용돌이칩니다.', bg: 'radial-gradient(circle at 30% 60%, rgba(74, 222, 128, 0.5) 0%, transparent 40%), radial-gradient(circle at 70% 30%, rgba(255, 255, 255, 0.4) 0%, transparent 50%), linear-gradient(135deg, #60a5fa, #2563eb, #1e3a8a)', glow: 'rgba(59, 130, 246, 0.6)', hasRing: false },
-        { id: 'mars', name: '화성', desc: '붉은 장미빛을 띠는 매혹적인 사막 행성. 짙은 산화철과 모래 폭풍의 색감입니다.', bg: 'radial-gradient(circle at 50% 20%, rgba(252, 165, 165, 0.6) 0%, transparent 40%), linear-gradient(145deg, #ef4444, #b91c1c, #450a0a)', glow: 'rgba(239, 68, 68, 0.5)', hasRing: false },
-        { id: 'jupiter', name: '목성', desc: '태양계의 거인. 부드러운 밀크티 색상의 가스 폭풍이 끊임없이 휘몰아칩니다.', bg: 'linear-gradient(0deg, #b45309, #d97706, #fde68a, #d97706, #78350f)', bgSize: '100% 200%', stripesOpacity: 0.6, glow: 'rgba(217, 119, 6, 0.5)', hasRing: false },
-        { id: 'saturn', name: '토성', desc: '우주의 보석. 은은한 황금빛 구체 주위로 눈부시게 아름다운 얼음 고리를 두르고 있습니다.', bg: 'linear-gradient(20deg, #92400e, #d97706, #fef3c7, #b45309)', stripesOpacity: 0.4, glow: 'rgba(253, 230, 138, 0.5)', ringColor: 'rgba(253, 230, 138, 0.7)', hasRing: true },
-        { id: 'uranus', name: '천왕성', desc: '옆으로 누워 도는 신비로운 얼음 행성. 영롱한 에메랄드빛과 옅은 고리를 가졌습니다.', bg: 'radial-gradient(circle at 60% 40%, #a7f3d0, #34d399 50%, #064e3b)', glow: 'rgba(52, 211, 153, 0.6)', ringColor: 'rgba(167, 243, 208, 0.3)', hasRing: true },
-        { id: 'neptune', name: '해왕성', desc: '태양계 가장 끝자락에 위치한 깊고 푸른 바다 빛깔의 폭풍 행성입니다.', bg: 'radial-gradient(circle at 30% 70%, rgba(147, 197, 253, 0.4) 0%, transparent 40%), linear-gradient(120deg, #3b82f6, #1d4ed8, #1e3a8a)', stripesOpacity: 0.3, glow: 'rgba(29, 78, 216, 0.6)', hasRing: false },
-        { id: 'pluto', name: '명왕성', desc: '얼음과 바위로 덮인 아득한 외곽의 왜소행성. 표면에 밝은 하트 모양의 빛이 감돕니다.', bg: 'radial-gradient(circle at 70% 30%, rgba(254, 240, 138, 0.5) 0%, transparent 35%), linear-gradient(135deg, #d6d3d1, #a8a29e, #57534e)', glow: 'rgba(168, 162, 158, 0.4)', hasRing: false },
+      // 15단계 우주선 랭크 데이터
+      const RANKS = [
+        { level: 1, title: '종이 비행기', minLy: 0, maxLy: 300, icon: 'paperclip' },
+        { level: 2, title: '열기구 탐사선', minLy: 301, maxLy: 800, icon: 'sun' },
+        { level: 3, title: '소형 드론', minLy: 801, maxLy: 1500, icon: 'drone' },
+        { level: 4, title: '스푸트니크', minLy: 1501, maxLy: 2500, icon: 'satellite' },
+        { level: 5, title: '알 우주선', minLy: 2501, maxLy: 4000, icon: 'moon' },
+        { level: 6, title: '꼬마 로켓', minLy: 4001, maxLy: 6000, icon: 'rocket' },
+        { level: 7, title: '궤도 기지', minLy: 6001, maxLy: 8500, icon: 'shuttle' },
+        { level: 8, title: '달 탐사 로버', minLy: 8501, maxLy: 11500, icon: 'rover' },
+        { level: 9, title: '심우주 탐사선', minLy: 11501, maxLy: 15000, icon: 'probe' },
+        { level: 10, title: '이온 추진선', minLy: 15001, maxLy: 20000, icon: 'ion' },
+        { level: 11, title: '태양 돛단배', minLy: 20001, maxLy: 26000, icon: 'sail' },
+        { level: 12, title: '소행성 채굴선', minLy: 26001, maxLy: 33000, icon: 'miner' },
+        { level: 13, title: '성간 순양함', minLy: 33001, maxLy: 42000, icon: 'cruiser' },
+        { level: 14, title: '차원 도약함', minLy: 42001, maxLy: 55000, icon: 'warp' },
+        { level: 15, title: '우주 정복자', minLy: 55001, maxLy: Number.POSITIVE_INFINITY, icon: 'trophy' },
       ];
 
       const iconPaths = {
         book: <><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"/></>,
-        moon: <path d="M12 3a6.7 6.7 0 0 0 8.7 8.7A8.6 8.6 0 1 1 12 3z"/>,
-        plane: <><path d="M17.8 19.2 16 11l6-6-17 7 7 2 2 7 3.8-1.8z"/><path d="m12 14 4-3"/></>,
-        plus: <><path d="M12 5v14"/><path d="M5 12h14"/></>,
+        star: <polygon points="12 2 15.1 8.3 22 9.3 17 14.2 18.2 21 12 17.8 5.8 21 7 14.2 2 9.3 8.9 8.3 12 2" />,
+        plus: <><path d="M12 5v14" /><path d="M5 12h14" /></>,
+        x: <><path d="M18 6 6 18" /><path d="m6 6 12 12" /></>,
+        moon: <path d="M12 3a6.7 6.7 0 0 0 8.7 8.7A8.6 8.6 0 1 1 12 3z" />,
         rocket: <><path d="M4.5 16.5c-1.2 1-1.5 3.5-1.5 3.5s2.5-.3 3.5-1.5c.6-.7.6-1.7 0-2.3-.6-.6-1.6-.6-2 .3z"/><path d="M9 15 5 11l3-3c3-3 7-4 11-4 0 4-1 8-4 11l-3 3-3-3z"/><path d="M9 15c0 1.5-1.5 3-3 3"/><path d="M15 9h.01"/></>,
-        navigation: <polygon points="3 11 22 2 13 21 11 13 3 11"/>, 
-        sun: <><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></>,
-        zap: <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>, 
-        shield: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>, 
-        compass: <><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></>, 
-        crown: <><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></>, 
         trophy: <><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v6a5 5 0 0 1-10 0V4z"/><path d="M5 6H3v2a4 4 0 0 0 4 4"/><path d="M19 6h2v2a4 4 0 0 1-4 4"/></>,
-        x: <><path d="M18 6 6 18"/><path d="m6 6 12 12"/></>,
-        star: <polygon points="12 2 15.1 8.3 22 9.3 17 14.2 18.2 21 12 17.8 5.8 21 7 14.2 2 9.3 8.9 8.3 12 2"/>,
-        sparkles: <><path d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3z"/><path d="m5 15 .8 2.2L8 18l-2.2.8L5 21l-.8-2.2L2 18l2.2-.8L5 15z"/><path d="m19 14 .8 2.2L22 17l-2.2.8L19 20l-.8-2.2L16 17l2.2-.8L19 14z"/></>,
-        search: <><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></>,
-        cloud: <><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></>,
-        radio: <><circle cx="12" cy="12" r="2"/><path d="M4.93 19.07a10 10 0 0 1 0-14.14"/><path d="M7.76 16.24a6 6 0 0 1 0-8.49"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></>,
-        home: <><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>,
-        crosshair: <><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></>,
-        activity: <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+        sun: <><circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" /></>,
+        paperclip: <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/>,
+        drone: <><path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path d="M22 12h-4"/><path d="M6 12H2"/><path d="M12 2v4"/><path d="M12 22v-4"/></>,
+        satellite: <><path d="M13 7 9 11"/><path d="m17 11-4 4"/><path d="m13 19-8-8"/><path d="m21 11-8-8"/><path d="M3 21l3-3"/></>,
+        shuttle: <path d="M13 2 3 14l9 9 10-12Z" />,
+        rover: <><circle cx="6" cy="16" r="3"/><circle cx="18" cy="16" r="3"/><path d="M3 16h18M6 16v-4h12v4M12 12V6M9 6h6"/></>,
+        probe: <><circle cx="12" cy="12" r="4"/><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/></>,
+        ion: <><path d="M12 2v20M8 6h8M6 12h12M8 18h8"/></>,
+        sail: <><path d="M22 12H2M12 2L2 12l10 10 10-10Z"/></>,
+        miner: <><path d="m12 14 4-4M16 10l-4-4-4 4 4 4ZM2 22l6-6M22 22l-6-6"/></>,
+        cruiser: <><path d="M4 12h16M4 12l8-8 8 8-8 8-8-8Z"/></>,
+        warp: <><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><path d="M12 2v20M2 12h20"/></>
       };
 
-      function Icon({ name, size = 24, className = '', filled = false, ...props }) {
+      function Icon({ name, size = 24, className = '', filled = false }) {
         return (
-          <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={filled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true" {...props}>
-            {iconPaths[name]}
+          <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" 
+               fill={filled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" 
+               strokeLinecap="round" strokeLinejoin="round" className={className}>
+            {iconPaths[name] || iconPaths['star']}
           </svg>
         );
       }
 
-      // 진화 단계 (15단계 세분화)
-      const RANKS = [
-        { level: 1, title: '알 우주선', minLy: 0, maxLy: 150, icon: 'moon' },
-        { level: 2, title: '종이 비행선', minLy: 151, maxLy: 350, icon: 'plane' },
-        { level: 3, title: '열기구 탐사선', minLy: 351, maxLy: 600, icon: 'cloud' },
-        { level: 4, title: '꼬마 로켓', minLy: 601, maxLy: 1000, icon: 'rocket' },
-        { level: 5, title: '통신 위성', minLy: 1001, maxLy: 1500, icon: 'radio' },
-        { level: 6, title: '정찰 위성', minLy: 1501, maxLy: 2200, icon: 'navigation' },
-        { level: 7, title: '궤도 기지', minLy: 2201, maxLy: 3000, icon: 'home' },
-        { level: 8, title: '달 탐사선', minLy: 3001, maxLy: 4000, icon: 'crosshair' },
-        { level: 9, title: '태양 돛단배', minLy: 4001, maxLy: 5200, icon: 'sun' },
-        { level: 10, title: '소행성 채굴선', minLy: 5201, maxLy: 6800, icon: 'activity' },
-        { level: 11, title: '이온 추진선', minLy: 6801, maxLy: 8800, icon: 'zap' },
-        { level: 12, title: '성간 순양함', minLy: 8801, maxLy: 11500, icon: 'shield' },
-        { level: 13, title: '은하계 탐사선', minLy: 11501, maxLy: 15000, icon: 'compass' },
-        { level: 14, title: '초공간 도약선', minLy: 15001, maxLy: 20000, icon: 'crown' },
-        { level: 15, title: '우주 정복자', minLy: 20001, maxLy: Number.POSITIVE_INFINITY, icon: 'trophy' },
-      ];
+      function getPlanetDefinition(index) {
+        // 처음 9개는 고정된 태양계 + 명왕성 행성들
+        const SOLARS = [
+          { name: '수성', baseColor: '#cbd5e1', decorColor: '#94a3b8', desc: '태양과 가장 가까운 작고 빠른 행성입니다.' },
+          { name: '금성', baseColor: '#fde047', decorColor: '#facc15', desc: '두꺼운 구름 이불을 덮고 있는 아주 뜨겁고 밝은 행성입니다.' },
+          { name: '지구', baseColor: '#93c5fd', decorColor: '#86efac', desc: '푸른 바다와 생명이 숨쉬는 우리가 살고 있는 곳입니다.' },
+          { name: '화성', baseColor: '#fca5a5', decorColor: '#f87171', desc: '붉은 모래로 덮여 볼이 빨간 매력적인 행성입니다.' },
+          { name: '목성', baseColor: '#fcd34d', decorColor: '#fbbf24', desc: '태양계에서 가장 덩치가 크고 가스로 이루어진 행성입니다.' },
+          { name: '토성', baseColor: '#fef08a', decorColor: '#eab308', desc: '아름다운 고리를 훌라후프처럼 두른 멋쟁이 행성입니다.' },
+          { name: '천왕성', baseColor: '#a5f3fc', decorColor: '#67e8f9', desc: '옆으로 누워서 데굴데굴 구르는 엉뚱한 하늘색 얼음 행성입니다.' },
+          { name: '해왕성', baseColor: '#60a5fa', decorColor: '#3b82f6', desc: '다이아몬드 비가 내리는 새파란 바다색 폭풍 행성입니다.' },
+          { name: '명왕성', baseColor: '#e2e8f0', decorColor: '#f8fafc', desc: '가슴에 커다란 하트를 품고 있는 작고 귀여운 친구입니다.' }
+        ];
 
-      function createBookId() {
-        return window.crypto?.randomUUID ? window.crypto.randomUUID() : `book-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      }
+        if (index < SOLARS.length) return SOLARS[index];
 
-      // 심우주의 감성적인 무작위 그라데이션 행성 생성
-      function getDynamicThemeId(index) {
-        if (index < PLANET_THEMES.length) return PLANET_THEMES[index].id;
-        return `deep-space-${index}`;
-      }
-
-      function getThemeById(themeId) {
-        const found = PLANET_THEMES.find((theme) => theme.id === themeId);
-        if (found) return found;
-
-        if (themeId && themeId.startsWith('deep-space-')) {
-          const idx = parseInt(themeId.split('-')[2]) || 0;
-          const hue1 = (idx * 137.5) % 360; 
-          const hue2 = (hue1 + 50) % 360;
-          const hasRing = idx % 3 === 0;
-          
-          return {
-            id: themeId,
-            name: `미지의 행성 X-${idx}`,
-            desc: `빛조차 닿기 힘든 심우주에서 발견된 신비롭고 영롱한 미지의 세계입니다.`,
-            bg: `radial-gradient(circle at 40% 30%, hsla(${hue1}, 80%, 70%, 0.6) 0%, transparent 50%), linear-gradient(135deg, hsl(${hue1}, 70%, 60%), hsl(${hue2}, 80%, 30%), #111)`,
-            glow: `hsla(${hue1}, 80%, 60%, 0.5)`,
-            ringColor: hasRing ? `hsla(${hue2}, 70%, 60%, 0.6)` : 'transparent',
-            hasRing: hasRing,
-            stripesOpacity: idx % 2 === 0 ? 0.2 : 0
-          };
-        }
-        return PLANET_THEMES[0];
-      }
-
-      function getPlanetTilt(themeId, index) {
-        if (themeId === 'uranus') return 75;
-        if (themeId.startsWith('deep-space-')) return Math.round(Math.sin(index * 123) * 60);
-        return ((index % 7) - 3) * 8;
-      }
-
-      function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
-      function getPlanetRadius(size) { return clamp(size, 50, 140) / 2; }
-      function getPositionMargins(size) {
-        const radius = getPlanetRadius(size) + 30;
-        return { x: (radius / CANVAS_MODEL.width) * 100, y: (radius / CANVAS_MODEL.height) * 100 };
-      }
-
-      // 중앙에서부터 나선형으로 뻗어나가는 정렬 알고리즘 (황금각 피보나치)
-      function findPlanetPosition(existingPlanets, size, newIndex) {
-        const margins = getPositionMargins(size);
-        const goldenAngle = 137.508 * (Math.PI / 180);
+        // 10번째부터는 무한히 생성되는 나만의 외계 심우주 행성 (파스텔톤)
+        const hue1 = (index * 137.5) % 360; 
+        const hue2 = (hue1 + 60) % 360;
         
-        let validPos = null;
-        for(let i = newIndex; i < newIndex + 100; i++) {
-            const angle = i * goldenAngle;
-            const radius = 5 + Math.sqrt(i) * 7.5; 
-
-            const x = clamp(50 + Math.cos(angle) * radius, margins.x, 100 - margins.x);
-            const y = clamp(50 + Math.sin(angle) * radius, margins.y, 100 - margins.y);
-            
-            // 약간의 겹침은 허용하여 우주 공간의 밀도를 예쁘게 함
-            let isOverlappingTooMuch = false;
-            for(const planet of existingPlanets) {
-                const dx = ((planet.x - x) / 100) * CANVAS_MODEL.width;
-                const dy = ((planet.y - y) / 100) * CANVAS_MODEL.height;
-                const dist = Math.hypot(dx, dy);
-                if(dist < (getPlanetRadius(planet.size) + getPlanetRadius(size)) * 0.75) {
-                    isOverlappingTooMuch = true;
-                    break;
-                }
-            }
-            if(!isOverlappingTooMuch) {
-                validPos = { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 };
-                break;
-            }
-        }
-        return validPos || { x: 50, y: 50 };
-      }
-
-      function normalizeBook(book, index) {
-        const pages = Math.max(1, Number(book.pages) || 1);
-        const rating = clamp(Number(book.rating) || 5, 1, 5);
-        const size = clamp(Number(book.size) || 80, 50, 140);
-        
-        const themeId = getDynamicThemeId(index);
-        const theme = getThemeById(themeId);
-        
-        // 기존 좌표 무시하고 순서에 맞게 나선형 궤도로 재정렬
-        const orderedPos = findPlanetPosition([], size, index);
-        
-        let tilt = Number(book.tilt) || getPlanetTilt(themeId, index);
-
         return {
-          id: book.id ?? createBookId(),
-          title: String(book.title ?? `책 ${index + 1}`),
-          pages: pages,
-          rating: rating,
-          review: String(book.review ?? ''),
-          x: orderedPos.x,
-          y: orderedPos.y,
-          size: size,
-          themeId: themeId,
-          hasRing: theme.hasRing,
-          tilt: tilt,
+          name: `외계 행성 X-${index + 1}`,
+          baseColor: `hsl(${hue1}, 85%, 75%)`,
+          decorColor: `hsl(${hue2}, 85%, 70%)`,
+          desc: '아직 인류가 닿지 못한 미지의 심우주에서 반짝이는 신비한 외계 행성입니다.'
         };
       }
 
-      // ★ 심미적인 3D 크리스탈 행성 컴포넌트 ★
-      function PlanetVisual({ book, isSelected = false, compact = false }) {
-        const theme = getThemeById(book.themeId);
-        const displaySize = compact ? 56 : book.size;
-        
+      function CutePlanet({ def, size }) {
         return (
-          <span
-            className={`planet-stage ${isSelected ? 'planet-selected' : ''}`}
-            style={{
-              '--planet-size': compact ? '56px' : `clamp(50px, ${book.size}px, 22vw)`,
-              '--planet-ring-width': `${Math.max(2, displaySize * 0.03)}px`,
-              '--planet-bg': theme.bg,
-              '--planet-bg-size': theme.bgSize || 'auto',
-              '--planet-glow': theme.glow, 
-              '--planet-ring-color': theme.ringColor || 'transparent',
-              '--planet-stripes-opacity': theme.stripesOpacity || 0,
-              '--planet-tilt': `${book.tilt ?? 0}deg`
-            }}
-          >
-            {book.hasRing && <span className="planet-ring planet-ring-back" />}
-            
-            <span className="planet-body">
-              {/* 가스형 띠 질감 오버레이 */}
-              <span className="planet-stripes" />
-            </span>
+          <div className="relative" style={{ width: size, height: size }}>
+            <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-xl overflow-visible">
+              {/* 행성 몸통 (부드러운 평면 컬러) */}
+              <circle cx="50" cy="50" r="48" fill={def.baseColor} />
+              
+              {/* 데코레이션 (얼룩 무늬) */}
+              <path d="M 10 30 Q 30 10 50 10 Q 20 30 10 50 Z" fill={def.decorColor} opacity="0.6" />
+              <path d="M 90 70 Q 70 90 50 90 Q 80 70 90 50 Z" fill={def.decorColor} opacity="0.6" />
+              <path d="M 85 20 Q 95 40 85 60 Q 65 40 85 20 Z" fill={def.decorColor} opacity="0.4" />
+              
+              {/* 귀여운 스마일 얼굴 (까만 눈과 입) */}
+              <g>
+                {/* 눈 */}
+                <circle cx="35" cy="45" r="5" fill="#1e293b" />
+                <circle cx="65" cy="45" r="5" fill="#1e293b" />
+                {/* 웃는 입 */}
+                <path d="M 40 55 Q 50 65 60 55" fill="none" stroke="#1e293b" strokeWidth="4" strokeLinecap="round" />
+                {/* 발그레한 볼터치 */}
+                <circle cx="20" cy="52" r="6" fill="#ff8da1" opacity="0.5" />
+                <circle cx="80" cy="52" r="6" fill="#ff8da1" opacity="0.5" />
+              </g>
 
-            {book.hasRing && <span className="planet-ring planet-ring-front" />}
-          </span>
+              {/* 반짝이는 3D 하이라이트 (유리구슬 코팅 느낌) */}
+              <path d="M 15 25 Q 30 5 60 10 Q 30 15 15 25 Z" fill="#ffffff" opacity="0.4" />
+            </svg>
+          </div>
         );
+      }
+
+      // 새 행성이 들어갈 때 기존 행성들과 겹치지 않는 위치를 찾아내는 마법의 알고리즘
+      function findNonOverlappingPosition(existingBooks, newSize) {
+        let attempt = 0;
+        let x = 50, y = 50;
+        let hasCollision = true;
+        
+        // 캔버스 가로를 대략 800px로 가정하고 %를 픽셀 단위로 환산해서 거리 계산
+        const canvasW = 800; 
+        const canvasH = 500;
+        const newRadius = newSize / 2;
+
+        while (hasCollision && attempt < 500) {
+            // 아르키메데스 나선 (중앙에서 시작해 빙글빙글 돌며 퍼져나감)
+            const angle = attempt * 0.6; 
+            const radius = 5 + (attempt * 1.5); 
+            
+            // X, Y % 위치 계산 (화면 비율 보정)
+            x = 50 + (Math.cos(angle) * radius);
+            y = 50 + (Math.sin(angle) * radius) * (canvasW / canvasH);
+
+            // 화면 밖으로 나가지 않도록 여백 설정 (10% ~ 90%)
+            x = Math.max(8, Math.min(92, x));
+            y = Math.max(12, Math.min(88, y));
+
+            hasCollision = false;
+            
+            // 기존에 배치된 모든 행성들과 거리를 비교!
+            for (const book of existingBooks) {
+                const bookRadius = book.size / 2;
+                
+                // % 좌표를 실제 픽셀 비율로 변경하여 정확한 거리 계산
+                const pxX = (x / 100) * canvasW;
+                const pxY = (y / 100) * canvasH;
+                const bPxX = (book.x / 100) * canvasW;
+                const bPxY = (book.y / 100) * canvasH;
+
+                const dist = Math.hypot(pxX - bPxX, pxY - bPxY);
+
+                // 두 행성의 반지름 합 + 15px(여백) 보다 가까우면 충돌(겹침)로 판정!
+                if (dist < (newRadius + bookRadius + 15)) {
+                    hasCollision = true;
+                    break; 
+                }
+            }
+            attempt++; // 충돌했으면 다음 나선 위치로 이동해서 다시 검사
+        }
+        
+        return { x, y };
       }
 
       function App() {
         const [books, setBooks] = useState([]);
-        const [isInitialLoad, setIsInitialLoad] = useState(true);
-        const [isSubmitting, setIsSubmitting] = useState(false);
+        const [isLoaded, setIsLoaded] = useState(false);
+        const [userContext, setUserContext] = useState(null);
+        
         const [isModalOpen, setIsModalOpen] = useState(false);
+        const [isLoading, setIsLoading] = useState(false);
         const [selectedBookId, setSelectedBookId] = useState(null);
-        
-        const emptyBookForm = { title: '', pages: '', rating: 5, review: '' };
-        const [newBook, setNewBook] = useState(emptyBookForm);
-        const [formError, setFormError] = useState('');
-        
-        const [searchQuery, setSearchQuery] = useState('');
-        const [searchResults, setSearchResults] = useState([]);
-        const [isSearching, setIsSearching] = useState(false);
-        const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-        const searchDropdownRef = useRef(null);
+        const [newBook, setNewBook] = useState({ title: '', pages: '', rating: 5, review: '' });
 
-        // 초기 데이터 로드 (나선형 궤도로 순서대로 배치)
+        // 1. Firebase 접속 및 개인 식별 설정 (여러 명 접속 시 데이터 분리 핵심!)
         useEffect(() => {
-          const loadData = async () => {
-            if (SCRIPT_URL) {
-              try {
-                const res = await fetch(SCRIPT_URL);
-                const data = await res.json();
-                
-                if (data && data.length > 0) {
-                    const arranged = [];
-                    data.forEach((book, i) => {
-                        const normalized = normalizeBook(book, i);
-                        const finalPos = findPlanetPosition(arranged, normalized.size, i);
-                        arranged.push({...normalized, x: finalPos.x, y: finalPos.y});
-                    });
-                    setBooks(arranged);
-                } else {
-                    setBooks([]);
-                }
-              } catch (e) {
-                console.error("데이터 불러오기 실패, 로컬 저장소를 사용합니다.", e);
-                loadFromLocal();
-              }
-            } else {
-              loadFromLocal();
-            }
-            setIsInitialLoad(false);
-          };
-          
-          const loadFromLocal = () => {
-            try {
-              const saved = window.localStorage.getItem(STORAGE_KEY);
-              if (saved) {
-                  const data = JSON.parse(saved);
-                  const arranged = [];
-                  data.forEach((book, i) => {
-                      const normalized = normalizeBook(book, i);
-                      const finalPos = findPlanetPosition(arranged, normalized.size, i);
-                      arranged.push({...normalized, x: finalPos.x, y: finalPos.y});
-                  });
-                  setBooks(arranged);
-              }
-            } catch (e) {}
-          };
-
-          loadData();
-        }, []);
-
-        useEffect(() => {
-          if (!isInitialLoad && !SCRIPT_URL) {
-            try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(books)); } catch (e) {}
+          // Firebase 환경이 로드되지 않았을 경우 (에러 방지)
+          if (typeof window.FirebaseEnv === 'undefined' || typeof __firebase_config === 'undefined') {
+            setIsLoaded(true);
+            return;
           }
-        }, [books, isInitialLoad]);
 
-        useEffect(() => {
-          const handleClickOutside = (e) => {
-            if (searchDropdownRef.current && !searchDropdownRef.current.contains(e.target)) setIsDropdownOpen(false);
-          };
-          document.addEventListener('mousedown', handleClickOutside);
-          return () => document.removeEventListener('mousedown', handleClickOutside);
+          try {
+            const { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore } = window.FirebaseEnv;
+            const config = JSON.parse(__firebase_config);
+            const app = initializeApp(config);
+            const auth = getAuth(app);
+            const db = getFirestore(app);
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'book-universe';
+
+            // 익명 로그인으로 각 브라우저마다 고유한 아이디(UID)를 발급받음
+            const initAuth = async () => {
+              try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                  await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                  await signInAnonymously(auth);
+                }
+              } catch (e) { console.error("인증 실패:", e); }
+            };
+            initAuth();
+
+            // 유저 아이디가 발급되면 상태에 저장
+            const unsub = onAuthStateChanged(auth, (user) => {
+              if (user) setUserContext({ uid: user.uid, db, appId });
+            });
+            return () => unsub();
+          } catch (e) {
+            console.error("Firebase 초기화 에러:", e);
+            setIsLoaded(true);
+          }
         }, []);
 
+        // 2. 내 고유 아이디(UID)에 해당하는 데이터만 실시간으로 불러오기!
         useEffect(() => {
-          if (!searchQuery.trim()) { setSearchResults([]); return; }
-          const timeoutId = setTimeout(async () => {
-            setIsSearching(true);
-            try {
-              // 💡 수정됨: langRestrict=ko 필터를 제거하고 검색 범위를 넓혔습니다 (maxResults 5 -> 10)
-              const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(searchQuery)}&printType=books&maxResults=10`);
-              const data = await res.json();
-              if (data.items) {
-                setSearchResults(data.items.map(item => ({
-                  id: item.id, title: item.volumeInfo.title,
-                  author: item.volumeInfo.authors ? item.volumeInfo.authors.join(', ') : '작자 미상',
-                  pages: item.volumeInfo.pageCount || '',
-                  thumbnail: item.volumeInfo.imageLinks?.smallThumbnail?.replace('http:', 'https:') || ''
-                })));
-              } else {
-                setSearchResults([]);
-              }
-            } catch (e) { console.error('검색 실패:', e); setSearchResults([]); } finally { setIsSearching(false); }
-          }, 500);
-          return () => clearTimeout(timeoutId);
-        }, [searchQuery]);
+          if (!userContext) return;
+          const { collection, onSnapshot } = window.FirebaseEnv;
+          
+          // 경로: artifacts / 앱이름 / users / 내아이디 / books (완벽한 개인 분리!)
+          const booksRef = collection(userContext.db, 'artifacts', userContext.appId, 'users', userContext.uid, 'books');
 
-        // 진화 상태 (15단계 반영)
+          const unsub = onSnapshot(booksRef, (snap) => {
+            const loaded = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            // 저장된 시간 순서대로 정렬 (먼저 기록한게 먼저 그려지도록)
+            loaded.sort((a, b) => {
+              const timeA = a.createdAt ? a.createdAt.toMillis() : (a.localTime || 0);
+              const timeB = b.createdAt ? b.createdAt.toMillis() : (b.localTime || 0);
+              return timeA - timeB;
+            });
+            setBooks(loaded);
+            setIsLoaded(true);
+          }, (error) => {
+            console.error("데이터 로드 에러:", error);
+            setIsLoaded(true);
+          });
+          return () => unsub();
+        }, [userContext]);
+
+        // 진행도 계산 로직
         const totalLy = useMemo(() => books.reduce((sum, book) => sum + book.pages, 0), [books]);
-        const currentIndex = RANKS.findIndex(r => totalLy >= r.minLy && totalLy <= r.maxLy) !== -1 
-                            ? RANKS.findIndex(r => totalLy >= r.minLy && totalLy <= r.maxLy) : RANKS.length - 1;
         
+        const getRankIndex = (ly) => {
+          const idx = RANKS.findIndex(r => ly >= r.minLy && ly <= r.maxLy);
+          return idx === -1 ? RANKS.length - 1 : idx;
+        };
+
+        const currentIndex = getRankIndex(totalLy);
         const currentRank = RANKS[currentIndex];
         const prevRank = currentIndex > 0 ? RANKS[currentIndex - 1] : null;
         const nextRank = currentIndex < RANKS.length - 1 ? RANKS[currentIndex + 1] : null;
         const remainingLy = nextRank ? Math.max(0, nextRank.minLy - totalLy) : 0;
         const progressPercent = nextRank ? Math.min(100, Math.max(0, ((totalLy - currentRank.minLy) / (nextRank.minLy - currentRank.minLy)) * 100)) : 100;
-        const selectedBook = books.find(b => b.id === selectedBookId) ?? books[books.length - 1] ?? null;
+        
+        const selectedBook = books.find((book) => book.id === selectedBookId) ?? books[books.length - 1] ?? null;
 
+        // 배경 요소
         const backgroundStars = useMemo(() => Array.from({ length: 40 }).map((_, i) => ({
           id: i, x: Math.random() * 100, y: Math.random() * 100, size: Math.random() * 3 + 1,
           opacity: Math.random() * 0.5 + 0.1, animDelay: `${Math.random() * 3}s`,
         })), []);
-        const shootingStars = useMemo(() => Array.from({ length: 4 }).map((_, i) => ({
+        
+        const shootingStars = useMemo(() => Array.from({ length: 3 }).map((_, i) => ({
           id: i, top: Math.random() * 40, left: Math.random() * 60 + 40,
           delay: Math.random() * 15 + i * 2, duration: Math.random() * 1.5 + 2,
         })), []);
 
-        const handleSelectSearchedBook = (book) => {
-          setSearchQuery(book.title);
-          setNewBook(prev => ({ ...prev, title: book.title, pages: book.pages ? String(book.pages) : prev.pages }));
-          setIsDropdownOpen(false);
-        };
+        const handleAddBook = async (event) => {
+          event.preventDefault();
+          const pagesNum = Number(newBook.pages);
+          if (!newBook.title.trim() || !Number.isFinite(pagesNum) || pagesNum < 1) return;
 
-        const handleAddBook = async (e) => {
-          e.preventDefault();
-          const title = newBook.title.trim(), pages = Number(newBook.pages);
-          if (!title || !Number.isFinite(pages) || pages < 1) { setFormError('책 제목과 1 이상의 페이지 수를 입력해 주세요.'); return; }
-
-          setIsSubmitting(true);
-          const newIndex = books.length;
-          const size = Math.max(50, Math.min(140, 40 + pages / 10));
+          setIsLoading(true);
           
-          const themeId = getDynamicThemeId(newIndex);
-          const theme = getThemeById(themeId);
-          const pos = findPlanetPosition(books, size, newIndex);
-          let tilt = getPlanetTilt(themeId, newIndex);
+          const safePages = Math.floor(pagesNum);
+          const size = Math.max(60, Math.min(130, 45 + safePages / 10)); // 책 두께에 따른 행성 크기 제한
+          
+          // 겹침 방지 알고리즘을 사용해 빈 공간 찾기!
+          const position = findNonOverlappingPosition(books, size);
+          
+          const planetIndex = books.length;
+          const planetDef = getPlanetDefinition(planetIndex);
           
           const addedBook = {
-            id: createBookId(), title, pages: Math.floor(pages), rating: newBook.rating, review: newBook.review.trim(),
-            x: pos.x, y: pos.y, size, themeId: themeId, hasRing: theme.hasRing, tilt: tilt,
+            title: newBook.title.trim(), 
+            pages: safePages, 
+            rating: newBook.rating, 
+            review: newBook.review.trim(),
+            x: position.x, 
+            y: position.y, 
+            size: size,
+            planetName: planetDef.name,
+            baseColor: planetDef.baseColor,
+            decorColor: planetDef.decorColor,
+            desc: planetDef.desc
           };
 
-          if (SCRIPT_URL) {
-            try {
-              await fetch(SCRIPT_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify(addedBook)
-              });
-            } catch (error) { console.error('기록 저장 실패:', error); }
+          if (userContext) {
+            // Firebase에 내 개인 데이터로 안전하게 기록
+            const { collection, addDoc, serverTimestamp } = window.FirebaseEnv;
+            const booksRef = collection(userContext.db, 'artifacts', userContext.appId, 'users', userContext.uid, 'books');
+            await addDoc(booksRef, { ...addedBook, createdAt: serverTimestamp(), localTime: Date.now() });
+          } else {
+            // Firebase 연결 안될 시 임시 처리 (화면 렌더링용)
+            setBooks(prev => [...prev, { id: Date.now().toString(), ...addedBook }]);
           }
 
-          setBooks(curr => [...curr, addedBook]);
-          setSelectedBookId(addedBook.id);
-          setNewBook(emptyBookForm);
-          setSearchQuery('');
-          setFormError('');
-          setIsSubmitting(false);
+          setIsLoading(false);
+          setNewBook({ title: '', pages: '', rating: 5, review: '' });
           setIsModalOpen(false);
         };
 
-        if (isInitialLoad && SCRIPT_URL) {
-          return (
-            <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-indigo-400 font-cute gap-4">
-              <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-              <p className="text-xl animate-pulse">우주 관측소에서 나의 별자리를 가져오는 중...</p>
-            </div>
-          );
-        }
+        if (!isLoaded) return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white text-2xl animate-pulse">우주를 그리는 중... 🚀</div>;
 
         return (
-          <div className="min-h-screen bg-slate-950 text-slate-300 font-cute selection:bg-indigo-500/30 pb-24 md:pb-12 overflow-x-hidden relative">
+          <div className="min-h-screen bg-slate-950 text-slate-300 selection:bg-indigo-500/30 pb-24 md:pb-12 overflow-x-hidden relative">
+            {/* 상단 헤더 */}
             <header className="border-b border-slate-800/60 bg-slate-950/80 backdrop-blur-md sticky top-0 z-30">
-              <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-end">
+              <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-end">
                 <div>
-                  <h1 className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400 mb-1 flex items-center gap-2">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-pink-400 mb-1 flex items-center gap-2">
                     <Icon name="rocket" size={28} className="text-indigo-400 shrink-0" />
                     나만의 독서 우주
                   </h1>
-                  <p className="text-slate-400 text-sm">책을 읽어 빛나는 행성을 띄우고 심우주로 나아가세요!</p>
+                  <p className="text-slate-400 text-sm hidden sm:block">책을 읽을수록 나만의 우주가 넓어집니다!</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs text-slate-500 block">총 비행 거리</span>
+                  <span className="text-xl font-bold text-indigo-300">{totalLy.toLocaleString()} <span className="text-sm">광년</span></span>
                 </div>
               </div>
             </header>
 
             <main>
-              {/* 진화 대시보드 */}
-              <section className="max-w-4xl mx-auto px-4 py-6 relative z-10">
-                <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-4 sm:p-6 shadow-2xl flex flex-col items-center">
+              {/* 15단계 우주선 랭크 대시보드 */}
+              <section className="max-w-5xl mx-auto px-4 sm:px-6 py-6 relative z-10">
+                <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-4 sm:p-6 shadow-2xl flex flex-col items-center">
                   <h2 className="text-slate-300 text-lg mb-6 flex items-center gap-2">
-                    <Icon name="sparkles" size={18} className="text-yellow-400" />
-                    우주선 진화 과정 (Level {currentIndex + 1}/{RANKS.length})
-                    <Icon name="sparkles" size={18} className="text-yellow-400" />
+                    <Icon name="star" filled size={18} className="text-yellow-400" />
+                    우주선 진화 (Level {currentRank.level}/15)
+                    <Icon name="star" filled size={18} className="text-yellow-400" />
                   </h2>
 
-                  <div className="grid grid-cols-[72px_minmax(120px,1fr)_72px] sm:grid-cols-[96px_1fr_144px_1.5fr_96px] items-center justify-between w-full max-w-3xl gap-2 sm:gap-0">
+                  <div className="grid grid-cols-[72px_minmax(100px,1fr)_72px] sm:grid-cols-[96px_1fr_120px_1.5fr_96px] items-center justify-between w-full gap-2 sm:gap-4">
+                    {/* 이전 단계 */}
                     <div className="flex flex-col items-center">
                       {prevRank ? (
                         <>
-                          <div className="w-12 h-12 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center mb-2 opacity-50">
-                            <Icon name={prevRank.icon} size={24} className="text-slate-500" />
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center mb-2 opacity-50">
+                            <Icon name={prevRank.icon} size={20} className="text-slate-500" />
                           </div>
                           <span className="text-xs text-slate-500 text-center leading-tight">{prevRank.title}</span>
                         </>
@@ -563,42 +446,44 @@
                       {prevRank && <div className="absolute inset-0 bg-indigo-500/30 rounded-full" />}
                     </div>
 
+                    {/* 현재 단계 */}
                     <div className="flex flex-col items-center relative group shrink-0">
-                      <div className="absolute top-0 w-20 h-20 bg-indigo-500 rounded-full blur-xl opacity-40 animate-pulse" />
-                      <div className="w-20 h-20 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center relative z-10 border-4 border-slate-900 shadow-[0_0_20px_rgba(99,102,241,0.5)] transform transition-transform duration-300 hover:scale-110">
-                        <Icon name={currentRank.icon} size={36} className="text-white drop-shadow-md" />
+                      <div className="absolute top-0 w-16 h-16 sm:w-20 sm:h-20 bg-indigo-500 rounded-full blur-xl opacity-40 animate-pulse" />
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-indigo-500 to-pink-500 flex items-center justify-center relative z-10 border-4 border-slate-900 shadow-xl group-hover:scale-105 transition-transform">
+                        <Icon name={currentRank.icon} size={32} className="text-white drop-shadow-md" />
                       </div>
                       <div className="mt-3 text-center">
                         <span className="text-base sm:text-lg font-bold text-white block leading-tight">{currentRank.title}</span>
-                        <span className="text-sm text-indigo-300 font-medium">{totalLy.toLocaleString()} 광년</span>
                       </div>
                     </div>
 
+                    {/* 다음 단계 진행바 */}
                     {nextRank ? (
-                      <div className="col-span-3 sm:col-span-1 row-start-2 sm:row-start-auto mx-1 sm:mx-6 mt-5 sm:mt-0 flex flex-col justify-center relative min-w-[80px]">
+                      <div className="col-span-3 sm:col-span-1 mt-4 sm:mt-0 flex flex-col justify-center relative w-full">
                         <div className="w-full h-3 bg-slate-800 rounded-full overflow-hidden border border-slate-700 shadow-inner">
                           <div className="h-full bg-gradient-to-r from-indigo-500 to-pink-500 progress-stripe transition-all duration-1000" style={{ width: `${progressPercent}%` }} />
                         </div>
                         <div className="mt-2 self-center bg-indigo-500/20 text-indigo-200 border border-indigo-500/30 px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap shadow-lg">
-                          다음 등급까지 {remainingLy.toLocaleString()} 광년!
+                          다음 진화까지 {remainingLy.toLocaleString()} 광년!
                         </div>
                       </div>
                     ) : <div className="hidden sm:block" />}
 
+                    {/* 다음 단계 */}
                     <div className="flex flex-col items-center">
                       {nextRank ? (
                         <>
-                          <div className="w-14 h-14 rounded-2xl bg-slate-800 border-2 border-dashed border-slate-600 flex items-center justify-center mb-2">
-                            <Icon name={nextRank.icon} size={28} className="text-slate-500" />
+                          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-slate-800 border-2 border-dashed border-slate-600 flex items-center justify-center mb-2">
+                            <Icon name={nextRank.icon} size={24} className="text-slate-500" />
                           </div>
                           <span className="text-xs text-slate-400 text-center leading-tight">{nextRank.title}</span>
                         </>
                       ) : (
                         <>
-                          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-yellow-400 to-orange-500 flex items-center justify-center mb-2 shadow-[0_0_15px_rgba(250,204,21,0.5)]">
-                            <Icon name="star" size={28} className="text-white animate-pulse" />
+                          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr from-yellow-400 to-orange-500 flex items-center justify-center mb-2 shadow-[0_0_15px_rgba(250,204,21,0.5)]">
+                            <Icon name="trophy" size={24} className="text-white animate-pulse" />
                           </div>
-                          <span className="text-xs text-yellow-400 font-bold text-center leading-tight">최종 목표 달성!</span>
+                          <span className="text-xs text-yellow-400 font-bold text-center leading-tight">우주 정복!</span>
                         </>
                       )}
                     </div>
@@ -606,179 +491,161 @@
                 </div>
               </section>
 
-              {/* 우주 공간 & 책 정보 패널 */}
-              <section className="max-w-5xl mx-auto px-4 grid lg:grid-cols-[minmax(0,1fr)_300px] gap-6">
+              <section className="max-w-5xl mx-auto px-4 sm:px-6 grid lg:grid-cols-[minmax(0,1fr)_320px] gap-4 sm:gap-6">
                 
-                {/* 캔버스 영역 */}
-                <div className="relative w-full h-[460px] sm:h-[540px] bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl">
-                  {/* 별과 별똥별 배경 */}
-                  <div className="absolute inset-0 opacity-70 mix-blend-screen" style={{background: 'radial-gradient(circle at center, transparent 0%, #020617 100%)', pointerEvents: 'none'}}></div>
-                  {backgroundStars.map(star => (
-                    <div key={star.id} className="absolute rounded-full bg-white animate-pulse" style={{ left: `${star.x}%`, top: `${star.y}%`, width: `${star.size}px`, height: `${star.size}px`, opacity: star.opacity, animationDelay: star.animDelay, animationDuration: '3s' }} />
+                {/* 캔버스 (행성들이 둥둥 떠있는 우주 공간) */}
+                <div className="relative w-full h-[450px] sm:h-[550px] bg-slate-900 border border-slate-800/80 rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl">
+                  {/* 배경 별들 */}
+                  {backgroundStars.map((star) => (
+                    <div key={`star-${star.id}`} className="absolute rounded-full bg-white animate-pulse" style={{ left: `${star.x}%`, top: `${star.y}%`, width: `${star.size}px`, height: `${star.size}px`, opacity: star.opacity, animationDelay: star.animDelay, animationDuration: '3s' }} />
                   ))}
-                  {shootingStars.map(star => (
-                    <div key={`s-${star.id}`} className="shooting-star" style={{ top: `${star.top}%`, left: `${star.left}%`, animation: `shootingStar ${star.duration}s linear infinite`, animationDelay: `${star.delay}s` }} />
+                  {/* 별똥별 */}
+                  {shootingStars.map((star) => (
+                    <div key={`shoot-${star.id}`} className="shooting-star" style={{ top: `${star.top}%`, left: `${star.left}%`, animation: `shootingStar ${star.duration}s linear infinite`, animationDelay: `${star.delay}s` }} />
                   ))}
-                  
-                  {/* 나선형 궤도선 */}
+
+                  {/* 궤도선 (행성 간 연결) */}
                   {books.length > 1 && (
                     <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20" viewBox="0 0 100 100" preserveAspectRatio="none">
-                      {books.map((b, i) => {
+                      {books.map((book, i) => {
                         if (i === 0) return null;
-                        const p = books[i - 1];
-                        // 완만한 베지에 곡선으로 행성들을 연결
-                        const cx = (p.x + b.x) / 2 + (b.y - p.y) * 0.2;
-                        const cy = (p.y + b.y) / 2 - (b.x - p.x) * 0.2;
-                        return <path key={`l-${b.id}`} d={`M ${p.x} ${p.y} Q ${cx} ${cy} ${b.x} ${b.y}`} fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="0.4" strokeDasharray="1 1.5" />;
+                        const prev = books[i - 1];
+                        const cx = (prev.x + book.x) / 2 + (Math.sin(i)*5);
+                        const cy = (prev.y + book.y) / 2 - (Math.cos(i)*5);
+                        return <path key={`line-${book.id}`} d={`M ${prev.x} ${prev.y} Q ${cx} ${cy} ${book.x} ${book.y}`} fill="none" stroke="white" strokeWidth="0.3" strokeDasharray="1 1" />;
                       })}
                     </svg>
                   )}
-                  
-                  {/* 영롱한 행성들 */}
-                  {books.map((book, i) => (
-                    <div key={book.id} className="absolute animate-pop-in" style={{ left: `${book.x}%`, top: `${book.y}%`, zIndex: selectedBookId === book.id ? 20 : 10 }}>
-                      <div className="planet-float flex flex-col items-center" style={{ animationDelay: `${(i % 5) * 0.4}s` }}>
-                        <button type="button" onClick={() => setSelectedBookId(book.id)} className="group rounded-full focus:outline-none transition-transform hover:scale-105">
-                          <PlanetVisual book={book} isSelected={selectedBookId === book.id} />
-                        </button>
-                        
-                        {/* 행성 이름표 */}
-                        <div className="absolute top-[calc(100%+12px)] text-indigo-50 text-xs font-bold opacity-80 text-center whitespace-nowrap bg-slate-950/80 px-3 py-1.5 rounded-full border border-slate-700/80 backdrop-blur-sm pointer-events-none shadow-lg transition-opacity group-hover:opacity-100 flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full shadow-[0_0_5px_currentColor]" style={{background: getThemeById(book.themeId).bg}}></span>
-                          {getThemeById(book.themeId).name}
+
+                  {/* 책(행성) 렌더링 */}
+                  {books.map((book, index) => {
+                    const isSelected = selectedBook?.id === book.id;
+                    
+                    return (
+                      <div key={`book-${book.id}`} className="planet-wrapper animate-pop-in" style={{ left: `${book.x}%`, top: `${book.y}%`, zIndex: isSelected ? 20 : 10 }}>
+                        <div className="planet-float flex flex-col items-center" style={{ animationDelay: `${(index % 5) * 0.4}s` }}>
+                          
+                          <button onClick={() => setSelectedBookId(book.id)} className="group focus:outline-none focus:ring-4 ring-indigo-500/50 rounded-full transition-transform hover:scale-110 flex flex-col items-center">
+                            {/* 귀여운 스마일 행성 그래픽 */}
+                            <div className={`transition-all duration-300 ${isSelected ? 'scale-110' : ''}`}>
+                               <CutePlanet def={book} size={book.size} />
+                            </div>
+                            
+                            {/* 라벨 (행성 이름 + 책 제목 콤보!) */}
+                            <div className={`mt-2 px-3 py-1.5 flex flex-col items-center bg-slate-900/90 backdrop-blur-md border rounded-xl transition-colors shadow-lg ${isSelected ? 'border-pink-400' : 'border-slate-700 group-hover:border-slate-500'}`}>
+                              <span className="text-[11px] text-pink-300 font-bold leading-none mb-1">{book.planetName}</span>
+                              <span className={`text-xs max-w-[100px] truncate leading-none ${isSelected ? 'text-white' : 'text-slate-300 group-hover:text-white'}`}>
+                                {book.title}
+                              </span>
+                            </div>
+                          </button>
+
                         </div>
                       </div>
-                    </div>
-                  ))}
-                  
+                    );
+                  })}
                   {books.length === 0 && (
-                     <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-500 p-6 text-center">
-                        <Icon name="sparkles" size={48} className="mb-4 opacity-50" />
-                        <p className="text-lg mb-2">아직 우주가 비어있어요.</p>
-                        <p className="text-sm">우측 하단의 + 버튼을 눌러 첫 번째 책을 읽고 우주를 탄생시켜 보세요!</p>
+                     <div className="absolute inset-0 flex items-center justify-center text-slate-500">
+                       <p>우측 하단의 ➕ 버튼을 눌러 나만의 우주를 넓혀보세요!</p>
                      </div>
                   )}
                 </div>
 
-                {/* 사이드바 정보 */}
-                <aside className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl flex flex-col">
+                {/* 우측 정보 패널 */}
+                <aside className="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 min-h-[300px] shadow-xl flex flex-col">
                   {selectedBook ? (
-                    <div className="flex flex-col h-full animate-pop-in">
-                      <div className="mb-6 self-center relative w-24 h-24 flex items-center justify-center">
-                          <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-xl animate-pulse"></div>
-                          <PlanetVisual book={selectedBook} isSelected compact />
+                    <div className="flex-1 flex flex-col animate-pop-in">
+                      <div className="mb-4 flex justify-center">
+                        <CutePlanet def={selectedBook} size={80} />
+                      </div>
+                      <div className="text-center mb-4">
+                        <span className="px-3 py-1.5 bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 rounded-lg text-sm font-bold shadow-md">{selectedBook.planetName}</span>
                       </div>
                       
-                      {/* 행성 과학 정보 */}
-                      <div className="bg-indigo-950/40 border border-indigo-500/20 rounded-2xl p-4 mb-5 shadow-inner">
-                        <div className="flex items-center gap-2 mb-2">
-                           <Icon name="sparkles" size={16} className="text-indigo-400" />
-                           <span className="text-indigo-300 text-sm font-bold tracking-wide">탐사 보고서</span>
-                        </div>
-                        <h3 className="text-white font-bold text-base mb-1">{getThemeById(selectedBook.themeId).name}</h3>
-                        <p className="text-xs text-indigo-200/90 leading-relaxed">{getThemeById(selectedBook.themeId).desc}</p>
-                      </div>
-
-                      {/* 독서 기록 정보 */}
-                      <h2 className="text-white text-2xl font-bold leading-tight break-words mb-2">{selectedBook.title}</h2>
-                      <p className="text-sm text-indigo-300 bg-indigo-500/10 inline-block px-3 py-1 rounded-full w-fit mb-4 border border-indigo-500/20">
-                          {selectedBook.pages.toLocaleString()} 광년 (페이지)
-                      </p>
+                      <h2 className="text-white text-xl font-bold leading-tight break-words">{selectedBook.title}</h2>
+                      <p className="text-sm text-pink-300 mt-1">{selectedBook.pages.toLocaleString()} 광년 (페이지)</p>
                       
-                      <div className="flex gap-1 mb-4">
+                      <div className="flex mt-2 gap-1">
                         {[...Array(5)].map((_, i) => (
-                          <Icon key={i} name="star" size={20} filled={i < selectedBook.rating} className={i < selectedBook.rating ? 'text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.8)]' : 'text-slate-700'} />
+                          <Icon key={i} name="star" size={18} filled={i < selectedBook.rating} className={i < selectedBook.rating ? 'text-yellow-400 drop-shadow-[0_0_5px_rgba(250,204,21,0.8)]' : 'text-slate-600'} />
                         ))}
                       </div>
+
+                      <div className="mt-4 flex-1">
+                        {selectedBook.review ? (
+                          <p className="text-sm text-slate-300 bg-slate-950/60 border border-slate-800 p-3 rounded-xl leading-relaxed">"{selectedBook.review}"</p>
+                        ) : (
+                          <p className="text-sm text-slate-500 italic">감상평이 없습니다.</p>
+                        )}
+                      </div>
                       
-                      {selectedBook.review ? (
-                        <div className="mt-2 text-sm text-slate-300 bg-slate-950/80 border border-slate-800 p-4 rounded-2xl leading-relaxed flex-1 overflow-y-auto shadow-inner">
-                            <span className="text-indigo-500 text-lg leading-none font-serif block mb-1">"</span>
-                            {selectedBook.review}
-                        </div>
-                      ) : <p className="mt-2 text-sm text-slate-500 flex-1">아직 감상평이 없어요.</p>}
+                      <div className="mt-4 p-3 bg-indigo-900/30 border border-indigo-500/30 rounded-xl">
+                        <p className="text-xs text-indigo-200 flex items-start gap-2">
+                          <span className="text-lg leading-none">💡</span>
+                          {selectedBook.desc}
+                        </p>
+                      </div>
                     </div>
                   ) : (
                     <div className="h-full flex flex-col justify-center items-center text-center text-slate-500">
-                      <Icon name="book" size={40} className="mb-4 text-slate-700" />
-                      <p className="text-lg font-bold text-slate-400 mb-2">행성을 선택해보세요</p>
-                      <p className="text-sm">우주에 떠 있는 행성을 클릭하면<br/>해당 책의 정보를 볼 수 있습니다.</p>
+                      <Icon name="book" size={32} className="mb-3 text-slate-600" />
+                      <p>행성을 클릭하면 책과<br/>귀여운 행성 정보가 보여요.</p>
                     </div>
                   )}
                 </aside>
               </section>
             </main>
 
-            {/* 기록 추가 플로팅 버튼 */}
-            <button onClick={() => { setFormError(''); setIsModalOpen(true); }} className="fixed bottom-8 right-8 lg:bottom-12 lg:right-12 bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-5 rounded-full shadow-[0_0_25px_rgba(99,102,241,0.6)] hover:scale-110 hover:shadow-[0_0_35px_rgba(99,102,241,0.9)] transition-all z-40">
+            {/* 등록 버튼 */}
+            <button onClick={() => setIsModalOpen(true)} className="fixed bottom-8 right-8 bg-gradient-to-r from-indigo-500 to-pink-500 text-white p-5 rounded-full shadow-[0_0_20px_rgba(236,72,153,0.5)] hover:scale-110 hover:shadow-[0_0_30px_rgba(236,72,153,0.8)] transition-all z-40">
               <Icon name="plus" size={32} />
             </button>
 
-            {/* 모달 창 (도서 검색 기능 포함) */}
+            {/* 깔끔한 책 등록 폼 모달 */}
             {isModalOpen && (
-              <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onMouseDown={() => !isSubmitting && setIsModalOpen(false)}>
-                <div className="bg-slate-900 border border-slate-700 w-full max-w-md rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] animate-pop-in" onMouseDown={e => e.stopPropagation()}>
-                  <div className="bg-slate-800/80 p-5 flex justify-between items-center border-b border-slate-700">
-                    <h2 className="text-xl font-bold text-white flex items-center gap-2"><Icon name="book" size={24} className="text-indigo-400" /> 새로운 행성 기록</h2>
-                    <button onClick={() => !isSubmitting && setIsModalOpen(false)} className="text-slate-400 hover:text-white transition-colors bg-slate-800 p-1.5 rounded-full"><Icon name="x" size={20} /></button>
+              <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4" onMouseDown={() => setIsModalOpen(false)}>
+                <div className="bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl overflow-visible shadow-2xl animate-pop-in" onMouseDown={(e) => e.stopPropagation()}>
+                  
+                  <div className="bg-slate-800 p-4 flex justify-between items-center border-b border-slate-700 rounded-t-2xl">
+                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                      <Icon name="book" size={24} className="text-pink-400" />새로운 행성 기록
+                    </h2>
+                    <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-white transition-colors">
+                      <Icon name="x" size={24} />
+                    </button>
                   </div>
 
                   <form onSubmit={handleAddBook} className="p-6 space-y-5">
-                    <div className="relative" ref={searchDropdownRef}>
-                      <label className="block text-sm font-medium text-slate-300 mb-1.5 ml-1">책 제목 검색</label>
-                      <div className="relative">
-                        <input
-                          required type="text" value={searchQuery}
-                          onChange={(e) => { setSearchQuery(e.target.value); setNewBook(b => ({ ...b, title: e.target.value })); setIsDropdownOpen(true); }}
-                          onFocus={() => { if(searchQuery) setIsDropdownOpen(true); }}
-                          className="w-full bg-slate-950 border border-slate-700 rounded-2xl pl-11 pr-4 py-3.5 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-inner"
-                          placeholder="어떤 책을 읽으셨나요?" autoComplete="off" disabled={isSubmitting}
-                        />
-                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"><Icon name="search" size={20} /></div>
-                      </div>
-                      
-                      {isDropdownOpen && searchQuery.trim() !== '' && (
-                        <div className="absolute z-20 w-full mt-2 bg-slate-800 border border-slate-600 rounded-2xl shadow-2xl max-h-64 overflow-y-auto divide-y divide-slate-700/50">
-                          {isSearching ? (
-                            <div className="p-5 text-center text-slate-400 flex items-center justify-center gap-2">
-                              <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div> 우주 도서관 검색 중...
-                            </div>
-                          ) : searchResults.length > 0 ? (
-                            searchResults.map(book => (
-                              <button key={book.id} type="button" onClick={() => handleSelectSearchedBook(book)} className="w-full text-left p-3 hover:bg-slate-700 transition-colors flex gap-3 items-center focus:bg-slate-700 outline-none">
-                                {book.thumbnail ? <img src={book.thumbnail} alt="" className="w-12 h-16 object-cover rounded-lg shrink-0 shadow-md" /> : <div className="w-12 h-16 bg-slate-900 rounded-lg flex items-center justify-center shrink-0 border border-slate-700"><Icon name="book" size={20} className="text-slate-500" /></div>}
-                                <div className="flex-1 overflow-hidden">
-                                  <div className="text-white font-bold truncate text-sm">{book.title}</div>
-                                  <div className="text-slate-400 text-xs truncate mt-1">{book.author}</div>
-                                  {book.pages && <div className="text-indigo-400 text-xs mt-1 bg-indigo-500/10 inline-block px-2 py-0.5 rounded">{book.pages} 광년</div>}
-                                </div>
-                              </button>
-                            ))
-                          ) : (
-                            <div className="p-5 text-center text-slate-300">
-                                <p className="text-sm font-bold mb-1">검색 결과에 책이 없나요?</p>
-                                <p className="text-xs text-slate-400">구글 도서관에 아직 등록되지 않은 책입니다.<br/>입력하신 제목 그대로 페이지 수만 적어 기록하실 수 있습니다.</p>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1.5 ml-1">페이지 수 (광년)</label>
+                      <label className="block text-sm font-medium text-slate-300 mb-1">다 읽은 책 제목</label>
                       <input
-                        required type="number" min="1" value={newBook.pages}
-                        onChange={(e) => setNewBook(b => ({ ...b, pages: e.target.value }))}
-                        className="w-full bg-slate-950 border border-slate-700 rounded-2xl px-4 py-3.5 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-inner"
-                        placeholder="이 책은 몇 쪽인가요?" disabled={isSubmitting}
+                        required autoFocus
+                        type="text"
+                        value={newBook.title}
+                        onChange={(e) => setNewBook({...newBook, title: e.target.value})}
+                        className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
+                        placeholder="예: 돈키호테"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1.5 ml-1">별점</label>
-                      <div className="flex gap-1 bg-slate-950 border border-slate-700 p-2 rounded-2xl w-fit shadow-inner">
-                        {[1, 2, 3, 4, 5].map(star => (
-                          <button key={star} type="button" onClick={() => setNewBook(b => ({ ...b, rating: star }))} disabled={isSubmitting} className="p-1 focus:outline-none transition-transform hover:scale-110">
+                      <label className="block text-sm font-medium text-slate-300 mb-1">총 페이지 수 (광년 거리)</label>
+                      <input 
+                        required 
+                        type="number" min="1" 
+                        value={newBook.pages} 
+                        onChange={(e) => setNewBook({...newBook, pages: e.target.value})} 
+                        className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all" 
+                        placeholder="예: 350" 
+                      />
+                      <p className="text-xs text-slate-500 mt-1 mt-1">* 페이지 수가 높을수록 더 큰 행성이 탄생합니다.</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">책 별점</label>
+                      <div className="flex gap-2">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button key={star} type="button" onClick={() => setNewBook({...newBook, rating: star})} className="focus:outline-none hover:scale-110 transition-transform">
                             <Icon name="star" size={32} filled={star <= newBook.rating} className={star <= newBook.rating ? 'text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.6)]' : 'text-slate-700'} />
                           </button>
                         ))}
@@ -786,14 +653,18 @@
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1.5 ml-1">한 줄 감상평</label>
-                      <textarea value={newBook.review} onChange={e => setNewBook(b => ({ ...b, review: e.target.value }))} className="w-full bg-slate-950 border border-slate-700 rounded-2xl px-4 py-3.5 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none transition-all shadow-inner" rows="2" placeholder="이 책을 읽고 느낀 점을 적어보세요." disabled={isSubmitting} />
+                      <label className="block text-sm font-medium text-slate-300 mb-1">기억에 남는 감상평 (선택)</label>
+                      <textarea 
+                        value={newBook.review} 
+                        onChange={(e) => setNewBook({...newBook, review: e.target.value})} 
+                        className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none transition-all" 
+                        rows="2" 
+                        placeholder="나만의 짤막한 우주 기록을 남겨보세요." 
+                      />
                     </div>
 
-                    {formError && <p className="text-sm text-rose-300 bg-rose-500/10 border border-rose-500/30 rounded-xl px-4 py-3">{formError}</p>}
-
-                    <button type="submit" disabled={isSubmitting || !newBook.title || !newBook.pages} className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold text-lg py-4 rounded-2xl mt-2 hover:shadow-[0_0_25px_rgba(99,102,241,0.6)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2">
-                      {isSubmitting ? <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>기록 중...</> : '행성 띄우기 🚀'}
+                    <button type="submit" disabled={isLoading} className="w-full bg-gradient-to-r from-indigo-500 to-pink-500 text-white font-bold py-4 rounded-xl mt-2 hover:shadow-[0_0_20px_rgba(236,72,153,0.5)] transition-all disabled:opacity-50">
+                      {isLoading ? '우주로 기록 전송 중... 🚀' : '행성 띄우기'}
                     </button>
                   </form>
                 </div>
@@ -802,6 +673,7 @@
           </div>
         );
       }
+
       ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
   </body>
