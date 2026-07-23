@@ -431,7 +431,8 @@
           const timeoutId = setTimeout(async () => {
             setIsSearching(true);
             try {
-              const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(searchQuery)}&maxResults=5&langRestrict=ko`);
+              // 💡 수정됨: langRestrict=ko 필터를 제거하고 검색 범위를 넓혔습니다 (maxResults 5 -> 10)
+              const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(searchQuery)}&printType=books&maxResults=10`);
               const data = await res.json();
               if (data.items) {
                 setSearchResults(data.items.map(item => ({
@@ -443,7 +444,7 @@
               } else {
                 setSearchResults([]);
               }
-            } catch (e) { console.error('검색 실패:', e); } finally { setIsSearching(false); }
+            } catch (e) { console.error('검색 실패:', e); setSearchResults([]); } finally { setIsSearching(false); }
           }, 500);
           return () => clearTimeout(timeoutId);
         }, [searchQuery]);
@@ -753,19 +754,29 @@
                                 </div>
                               </button>
                             ))
-                          ) : <div className="p-5 text-center text-slate-400 text-sm">검색 결과가 없습니다. 직접 입력해 주세요.</div>}
+                          ) : (
+                            <div className="p-5 text-center text-slate-300">
+                                <p className="text-sm font-bold mb-1">검색 결과에 책이 없나요?</p>
+                                <p className="text-xs text-slate-400">구글 도서관에 아직 등록되지 않은 책입니다.<br/>입력하신 제목 그대로 페이지 수만 적어 기록하실 수 있습니다.</p>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-slate-300 mb-1.5 ml-1">페이지 수 (광년)</label>
-                      <input required type="number" min="1" value={newBook.pages} onChange={e => setNewBook(b => ({ ...b, pages: e.target.value }))} className="w-full bg-slate-950 border border-slate-700 rounded-2xl px-4 py-3.5 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-inner" placeholder="예: 250" disabled={isSubmitting} />
+                      <input
+                        required type="number" min="1" value={newBook.pages}
+                        onChange={(e) => setNewBook(b => ({ ...b, pages: e.target.value }))}
+                        className="w-full bg-slate-950 border border-slate-700 rounded-2xl px-4 py-3.5 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-inner"
+                        placeholder="이 책은 몇 쪽인가요?" disabled={isSubmitting}
+                      />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-2 ml-1">별점</label>
-                      <div className="flex gap-1 bg-slate-950 border border-slate-700 p-2 rounded-2xl w-fit">
+                      <label className="block text-sm font-medium text-slate-300 mb-1.5 ml-1">별점</label>
+                      <div className="flex gap-1 bg-slate-950 border border-slate-700 p-2 rounded-2xl w-fit shadow-inner">
                         {[1, 2, 3, 4, 5].map(star => (
                           <button key={star} type="button" onClick={() => setNewBook(b => ({ ...b, rating: star }))} disabled={isSubmitting} className="p-1 focus:outline-none transition-transform hover:scale-110">
                             <Icon name="star" size={32} filled={star <= newBook.rating} className={star <= newBook.rating ? 'text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.6)]' : 'text-slate-700'} />
