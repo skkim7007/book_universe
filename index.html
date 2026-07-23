@@ -81,11 +81,11 @@
     <!-- Firebase SDK 로드 -->
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-      import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+      import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
       import { getFirestore, collection, onSnapshot, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
       // React 코드(Babel)에서 Firebase 모듈을 사용할 수 있도록 전역 객체에 연결
-      window.FirebaseEnv = { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore, collection, onSnapshot, addDoc, serverTimestamp };
+      window.FirebaseEnv = { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, setPersistence, browserLocalPersistence, getFirestore, collection, onSnapshot, addDoc, serverTimestamp };
     </script>
 
     <script type="text/babel">
@@ -270,7 +270,7 @@
           }
 
           try {
-            const { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore } = window.FirebaseEnv;
+            const { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, setPersistence, browserLocalPersistence, getFirestore } = window.FirebaseEnv;
             const config = JSON.parse(__firebase_config);
             const app = initializeApp(config);
             const auth = getAuth(app);
@@ -280,6 +280,9 @@
             // 익명 로그인으로 각 브라우저마다 고유한 아이디(UID)를 발급받음
             const initAuth = async () => {
               try {
+                // 핵심 수정: 브라우저를 껐다 켜도 세션(익명 고유 ID)이 날아가지 않도록 '로컬 저장' 강제 설정!
+                await setPersistence(auth, browserLocalPersistence);
+
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                   await signInWithCustomToken(auth, __initial_auth_token);
                 } else {
