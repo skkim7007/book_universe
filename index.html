@@ -201,6 +201,41 @@
       border-color: #a576ff7a;
       transform: translateY(-1px);
     }
+    .action-button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--soft);
+      transition: color .16s, transform .16s;
+      padding: 0;
+    }
+    .action-button:hover {
+      color: #fff;
+      transform: translateY(-1px);
+    }
+    .action-button .icon-wrapper {
+      border: 1px solid var(--line);
+      width: 40px;
+      height: 40px;
+      background: #ffffff0b;
+      border-radius: 12px;
+      place-items: center;
+      display: inline-grid;
+      transition: inherit;
+    }
+    .action-button:hover .icon-wrapper {
+      background: #7769ff21;
+      border-color: #a576ff7a;
+    }
+    .action-button span {
+      font-size: 10px;
+      letter-spacing: -0.02em;
+      font-weight: 500;
+    }
     .content {
       z-index: 2;
       width: min(1180px, 100% - 56px);
@@ -1612,11 +1647,17 @@
                 </div>
                 
                 <div className="backup-actions">
-                  <button type="button" className="icon-button" onClick={downloadBackup} aria-label="독서 기록 백업 내려받기" title="백업 내려받기">
-                    <Icon name="download" size={19} />
+                  <button type="button" className="action-button" onClick={downloadBackup} aria-label="독서 기록 백업 파일(JSON) 내려받기" title="현재 기기의 독서 기록을 백업 파일로 저장합니다.">
+                    <span className="icon-wrapper">
+                      <Icon name="download" size={19} />
+                    </span>
+                    <span>백업 저장</span>
                   </button>
-                  <button type="button" className="icon-button" onClick={() => fileInputRef.current?.click()} aria-label="독서 기록 백업 불러오기" title="백업 불러오기">
-                    <Icon name="upload" size={19} />
+                  <button type="button" className="action-button" onClick={() => fileInputRef.current?.click()} aria-label="기존 독서 기록 백업 파일(JSON) 불러오기" title="저장해둔 백업 파일을 불러와 현재 우주에 복원합니다.">
+                    <span className="icon-wrapper">
+                      <Icon name="upload" size={19} />
+                    </span>
+                    <span>백업 복원</span>
                   </button>
                   <input ref={fileInputRef} className="sr-only" type="file" accept="application/json,.json" onChange={handleFileUpload} tabIndex={-1} />
                 </div>
